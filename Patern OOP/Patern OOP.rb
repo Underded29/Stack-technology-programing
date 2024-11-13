@@ -1,55 +1,69 @@
-class Handler
-  def handle(request)
-    puts "Обробник за замовчуванням: не можу обробити запит."
+class SupportLevel
+  def initialize(next_level = nil)
+    @next_level = next_level
   end
-end
 
-class FirstLevelSupport < Handler
-  def handle(request)
-    if request == 'simple_issue'
-      puts 'Перша лінія підтримки обробляє запит.'
+  def handle_request(issue)
+    if can_handle?(issue)
+      process_request(issue)
+    elsif @next_level
+      @next_level.handle_request(issue)
     else
-      super # Передаємо запит наступному обробнику
+      puts "No support available for this issue."
     end
   end
-end
 
-class SecondLevelSupport < Handler
-  def handle(request)
-    if request == 'complex_issue'
-      puts 'Друга лінія підтримки обробляє запит.'
-    else
-      super # Якщо не може обробити, передає далі
-    end
+  def can_handle?(_issue)
+    false
+  end
+
+  def process_request(issue)
+    puts "Processing request for: #{issue}"
   end
 end
 
-# Створюємо обробники
-first_support = FirstLevelSupport.new
-second_support = SecondLevelSupport.new
+class Level1Support < SupportLevel
+  def can_handle?(issue)
+    issue == 'password reset'
+  end
 
-# Зв'язуємо їх
-first_support.instance_variable_set(:@next_handler, second_support)
-
-# Метод обробки з можливістю передачі запиту
-def handle_request(handler, request)
-  # Спробувати обробити запит поточним обробником
-  handled = handler.handle(request)
-
-  # Якщо запит не був оброблений, продовжуємо до наступного обробника
-  if !handled
-    next_handler = handler.instance_variable_get(:@next_handler)
-    handle_request(next_handler, request) if next_handler # Рекурсивний виклик для наступного обробника
+  def process_request(issue)
+    puts "Level 1 support: Handling #{issue}."
   end
 end
 
-# Тестові запити
-requests = ['simple_issue', 'complex_issue', 'unknown_issue']
+class Level2Support < SupportLevel
+  def can_handle?(issue)
+    issue == 'account lockout'
+  end
 
-# Виводимо процес обробки
-requests.each do |request|
-  puts "Обробка запиту: #{request}"
-  handle_request(first_support, request)
-  puts "----"
+  def process_request(issue)
+    puts "Level 2 support: Handling #{issue}."
+  end
 end
 
+class Level3Support < SupportLevel
+  def can_handle?(issue)
+    issue == 'security breach'
+  end
+
+  def process_request(issue)
+    puts "Level 3 support: Handling #{issue}."
+  end
+end
+
+class SupportClient
+  def initialize
+    @support_chain = Level1Support.new(Level2Support.new(Level3Support.new))
+  end
+
+  def request_support(issue)
+    @support_chain.handle_request(issue)
+  end
+end
+
+client = SupportClient.new
+client.request_support('password reset')   # Оброблено Level 1 support
+client.request_support('account lockout')  # Оброблено Level 2 support
+client.request_support('security breach')  # Оброблено Level 3 support
+client.request_support('unknown issue')    # Немає підтримки для цього запиту
