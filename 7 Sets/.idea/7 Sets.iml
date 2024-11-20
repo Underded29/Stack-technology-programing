@@ -11,6 +11,5 @@
     </content>
     <orderEntry type="jdk" jdkName="ruby-3.3.4-p94" jdkType="RUBY_SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="minitest (v5.20.0, ruby-3.3.4-p94) [gem]" level="application" />
   </component>
 </module>
